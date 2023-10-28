@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 
 class RegressionModel:
-    def __init__(self, dataX, dataY, learning_rate=0.01, epochs=400, log=False, format=lambda x: torch.tensor(x).double(), device=None):
+    def __init__(self, dataX, dataY,name , learning_rate=0.01, epochs=400, log=False, format=lambda x: torch.tensor(x).double(), device=None):
         """
         Initialize the RegressionModel.
 
@@ -19,6 +19,8 @@ class RegressionModel:
             format (callable): A function to format input data.
             device (str or torch.device): 'cpu' or 'cuda' for device selection.
         """
+        self.name=name
+        self.savers=[]
         self.device = device if device else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.dataX = format(dataX).to(self.device)
         self.dataY = torch.tensor(dataY).to(self.device)
@@ -30,11 +32,20 @@ class RegressionModel:
         self.epochs = epochs
         self.log = log
         self.every = 100
+        self.everySave = 500
         self.format = format
+        self.dataset="MNIST"
 
     def set_log(self, log):
         """Set whether to log training progress."""
         self.log = log
+    
+    def set_dataset(self,dataS):
+        self.dataset=dataS
+
+    def add_saver(self,saver):
+        saver.init(self.name,len(self.dataX[0]),self.dataset)
+        self.savers.append(saver)
 
     def set_device(self, device=None):
         """
@@ -97,7 +108,7 @@ class RegressionModel:
         """
         epochs = epochs if epochs is not None else self.epochs
         train_loader = DataLoader(self.train_data, batch_size=batch_size, shuffle=True)
-        for epoch in range(self.epochs, self.epochs + epochs):
+        for self.epochs in range(self.epochs, self.epochs + epochs):
             for batch_x, batch_y in train_loader:
                 batch_x = batch_x.to(self.device)
                 batch_y = batch_y.to(self.device)
@@ -106,9 +117,18 @@ class RegressionModel:
                 loss.backward()
                 self.optimizer.step()
                 self.optimizer.zero_grad()
-            if (epoch + 1) % self.every == 0 and self.log:
-                print(f'epoch: {epoch + 1}, loss = {loss.item():.4f}')
-        self.epochs = self.epochs + epochs
+            if (self.epochs + 1) % self.everySave==0 and self.save:
+                try:
+                    acc = self.accuracy()
+                    self.save_logs(self.epochs,acc,loss.item())
+                except:
+                    print("Couldn't save accuracy")
+                    
+
+            if (self.epochs + 1) % self.every == 0 and self.log:
+                print(f'epoch: {self.epochs + 1}, loss = {loss.item():.4f}')
+            
+        
 
     def accuracy(self, format=False):
         """
@@ -143,7 +163,7 @@ class RegressionModel:
         self.dataYTest = torch.tensor(dataY).to(self.device)
 
 
-    def save_model(self, model_path, optimizer_path=None, extra_info=None):
+    def save_model(self, model_path=True, optimizer_path=None, extra_info=None):
         """
         Save the trained model, optimizer state, and extra information to a file.
 
@@ -152,6 +172,8 @@ class RegressionModel:
             optimizer_path (str, optional): Path to the file where the optimizer state will be saved.
             extra_info (dict, optional): Additional information to save alongside the model.
         """
+        if model_path==True:
+            model_path="saves/"+self.name+".model"
         state = {
             'epoch': self.epochs,
             'model_state_dict': self.model.state_dict(),
@@ -162,7 +184,7 @@ class RegressionModel:
         if optimizer_path:
             torch.save(self.optimizer.state_dict(), optimizer_path)
 
-    def load_model(self, model_path, optimizer_path=None):
+    def load_model(self, model_path=True, optimizer_path=None):
         """
         Load a trained model, optimizer state, and extra information from a file.
 
@@ -170,6 +192,8 @@ class RegressionModel:
             model_path (str): Path to the file from which the model will be loaded.
             optimizer_path (str, optional): Path to the file from which the optimizer state will be loaded.
         """
+        if model_path==True:
+            model_path="saves/"+self.name+".model"
         checkpoint = torch.load(model_path)
         self.epochs = checkpoint['epoch']
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -180,6 +204,11 @@ class RegressionModel:
         if extra_info:
             print("Loaded extra information:", extra_info)
 
+    def save_logs(self,epochs,accuracy,loss,savers=True):
+        if savers==True:
+            savers=range(len(self.savers))
+        for i in savers:
+            self.savers[i].save_log(epochs,accuracy,loss)
 
             
 if __name__ == "__main__":
