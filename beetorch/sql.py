@@ -1,8 +1,10 @@
 import asyncio
 import mysql.connector as mysql
 
+from beetorch import Saver
 
-class SQL_saver:
+
+class SQL_saver(Saver):
     def __init__(self,host=True,username=True,passw=True,database=True):
         self.host=host
         self.username=username
@@ -20,13 +22,13 @@ class SQL_saver:
             if database==True:
                 self.database=auth[3]
 
-        self.initiallized=False
+        super().__init__()
 
         
         return
     
     
-    def init(self,name,dimension,dataset):
+    def init(self,name,dimension,dataset,poison,poisonRate):
         self.db = mysql.connect(
             host = self.host,
             user = self.username,
@@ -37,22 +39,21 @@ class SQL_saver:
 
         self.cursor.execute("SELECT id FROM models WHERE name=%s and dimension=%s",(name,dimension))
         result=self.cursor.fetchall()
-        print(result)
         if(len(result)==0):
             self.cursor.execute("INSERT INTO models (name,dimension,dataset) VALUES (%s,%s,%s)",(name,dimension,dataset))
             self.db.commit()
             self.model_id = self.cursor.lastrowid
-            return True
         else:
             self.model_id=result[0][0]
-            return True
+        super().init(name,dimension,dataset,poison,poisonRate)
+        return True
     
     
     async def save_log_async(self,epochs,accuracy,loss):
         if not self.initiallized:
             return False
-        sql= "INSERT INTO logs (model_id,epochs,accuracy,loss) VALUES (%s,%s,%s,%s)"
-        val= (self.model_id,epochs,accuracy,loss)
+        sql= "INSERT INTO logs (model_id,epochs,accuracy,loss,poison,poison_rate) VALUES (%s,%s,%s,%s,%s,%s)"
+        val= (self.model_id,epochs,accuracy,loss,self.poison,self.poisonRate)
         self.cursor.execute(sql,val)
         self.db.commit()
         return True
