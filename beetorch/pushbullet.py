@@ -22,13 +22,18 @@ class Pushbullet_saver(Saver):
             authF = open('conf/pushbullet.txt', 'r')
             access_token = authF.readline().rstrip()
         self.access_token=access_token
-        self.api = Pushbullet(access_token)
-        self.channel=self.api.channels[0]
+        self.working=True
+        try:
+            self.api = Pushbullet(access_token)
+            self.channel=self.api.channels[0]
+        except:
+            print("Couldn't load PushBullet :(")
+            self.working=False
         super().__init__()
     
     
     def save_log(self,epochs,accuracy,loss):
-        if not self.initiallized:
+        if (not self.initiallized) or (not self.working):
             return
         if self.minTime>time.time()-self.time:
             return
