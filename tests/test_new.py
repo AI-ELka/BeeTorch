@@ -54,7 +54,7 @@ print("Creating model....")
 model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression",format=format,learning_rate=0.015)
 
 # Choose poisoning (For now just for logging, in the future will be effective)
-model.set_poison(Poison.LABEL_FLIPPING,0.10)
+model.set_poison(Poison.LABEL_FLIPPING,0.0)
 
 
 # Adding SQL saver abd Pushbullet notification system, with frequency of 4, resp2 every log
