@@ -81,7 +81,7 @@ print("Creating model....")
 model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression",format=polyRegFormat,learning_rate=0.015)
 
 # Choose poisoning (For now just for logging, in the future will be effective)
-model.set_poison(Poison.NO_POISONING,0.10)
+model.set_poison(Poison.NO_POISONING,0)
 
 model.load_model()
 
@@ -89,7 +89,7 @@ model.load_model()
 # Adding SQL saver abd Pushbullet notification system, with frequency of 4, resp2 every log
 # Note that you should have files conf/sql.txt and conf/pushbullet.txt containing access tokens
 model.add_saver(SQL_saver(),2)
-model.add_finisher(Pushbullet_saver(),10)
+model.add_finisher(Pushbullet_saver(finisher=True))
 
 def operator(p,y):
     if(np.argmax(p)==np.argmax(y)):
