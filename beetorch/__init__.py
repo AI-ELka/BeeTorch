@@ -130,7 +130,7 @@ class Model:
         """Get the dimensions of the model's weight."""
         return self.model.weight.size().detach().numpy()
 
-    def train(self, epochs=None, batch_size=10000):
+    def train(self, epochs=None, batch=False, batch_size=10000):
         """
         Train the model.
 
@@ -139,16 +139,24 @@ class Model:
             batch_size (int): Batch size for training data.
         """
         epochs = epochs if epochs is not None else self.epochs
-        train_loader = DataLoader(self.train_data, batch_size=batch_size, shuffle=True)
+        if batch:
+            train_loader = DataLoader(self.train_data, batch_size=batch_size, shuffle=True)
         for self.epochs in range(self.epochs+1, self.epochs + epochs+1):
-            for batch_x, batch_y in train_loader:
-                batch_x = batch_x.to(self.device).double()
-                batch_y = batch_y.to(self.device).double()
-                y_predicted = self.model(batch_x)
-                loss = self.criterion(y_predicted, batch_y)
+            if batch:
+                for batch_x, batch_y in train_loader:
+                    batch_x = batch_x.to(self.device).double()
+                    batch_y = batch_y.to(self.device).double()
+                    y_predicted = self.model(batch_x)
+                    loss = self.criterion(y_predicted, batch_y)
+                    loss.backward()
+                    self.optimizer.step()
+                    self.optimizer.zero_grad()     
+            else:
+                y_predicted=self.model(self.dataX)
+                loss = self.criterion(y_predicted, self.dataY)
                 loss.backward()
                 self.optimizer.step()
-                self.optimizer.zero_grad()       
+                self.optimizer.zero_grad()  
             accuracy=False             
 
             if (self.epochs) % self.every == 0:
@@ -243,17 +251,22 @@ class Model:
             model_path (str): Path to the file from which the model will be loaded.
             optimizer_path (str, optional): Path to the file from which the optimizer state will be loaded.
         """
-        if model_path==True:
-            model_path=f"saves/{self.dataset}_{self.name}_{self.get_dimension()}_{self.poisoning}_{int(self.poisonRate*1000)}.model"
-        checkpoint = torch.load(model_path)
-        self.epochs = checkpoint['epoch']
-        self.model.load_state_dict(checkpoint['model_state_dict'])
-        if optimizer_path:
-            self.optimizer.load_state_dict(torch.load(optimizer_path))
+        try:
+            if model_path==True:
+                model_path=f"saves/{self.dataset}_{self.name}_{self.get_dimension()}_{self.poisoning}_{int(self.poisonRate*1000)}.model"
+            checkpoint = torch.load(model_path)
+            self.epochs = checkpoint['epoch']
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            if optimizer_path:
+                self.optimizer.load_state_dict(torch.load(optimizer_path))
 
-        extra_info = checkpoint.get('extra_info', None)
-        if extra_info:
-            print("Loaded extra information:", extra_info)
+            extra_info = checkpoint.get('extra_info', None)
+            print("Loaded model from : "+model_path)
+            if extra_info:
+                print("Loaded extra information:", extra_info)
+        except:
+            print("Couldn't load the model")
+            pass
 
     def save_logs(self,epochs,accuracy,loss,savers=True):
         if savers==True:

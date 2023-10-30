@@ -19,6 +19,7 @@ class Pushbullet_saver(Saver):
         if access_token==True:
             authF = open('conf/pushbullet.txt', 'r')
             access_token = authF.readline().rstrip()
+        self.access_token=access_token
         self.api = Pushbullet(access_token)
         self.channel=self.api.channels[0]
         super().__init__()
@@ -27,7 +28,11 @@ class Pushbullet_saver(Saver):
     def save_log(self,epochs,accuracy,loss):
         if not self.initiallized:
             return
-        msg=default_text(self.name,self.dimension,self.dataset,epochs,accuracy,loss,self.poison,self.poisonRate)
-        self.channel.push_note(msg[0],msg[1])
+        try:
+            msg=default_text(self.name,self.dimension,self.dataset,epochs,accuracy,loss,self.poison,self.poisonRate)
+            self.channel.push_note(msg[0],msg[1])
+        except:
+            self.api = Pushbullet(self.access_token)
+            self.channel=self.api.channels[0]
 
     
