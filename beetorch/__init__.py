@@ -40,6 +40,7 @@ class Model:
         """
         self.name=name
         self.savers=[]
+        self.finishers=[]
         self.device = device if device else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.dataX = format(dataX).to(self.device)
         if not torch.is_tensor(dataY):
@@ -49,6 +50,7 @@ class Model:
         self.criterion = torch.nn.MSELoss()
         self.learning_rate = learning_rate
         self.epochs = epochs
+        self.save_epochs = 0
         self.log = log
         self.every = 100
         self.saveEvery = 500
@@ -68,6 +70,10 @@ class Model:
     def add_saver(self,saver,every=1):
         saver.init(self.name,self.get_dimension(),self.dataset,self.poisoning,self.poisonRate)
         self.savers.append([saver,every])
+
+    def add_finisher(self,saver):
+        saver.init(self.name,self.get_dimension(),self.dataset,self.poisoning,self.poisonRate)
+        self.finishers.append(saver)
 
     def set_poison(self,poisoning,poisonRate):
         """ Setting the poison (it changes also savers initialisation)"""
@@ -139,8 +145,10 @@ class Model:
             batch_size (int): Batch size for training data.
         """
         epochs = epochs if epochs is not None else self.epochs
+        accuracy=-1
         if batch:
             train_loader = DataLoader(self.train_data, batch_size=batch_size, shuffle=True)
+        loss=0
         for self.epochs in range(self.epochs+1, self.epochs + epochs+1):
             if batch:
                 for batch_x, batch_y in train_loader:
@@ -169,6 +177,9 @@ class Model:
                         x[0].save_log(self.epochs,accuracy,loss.item())
             if (self.epochs) % self.saveEvery == 0:
                 self.save_model()
+        if epochs>0:
+            for finisher in self.finishers:
+                finisher.save_log(self.epochs,accuracy,loss.item())
             
         
 
@@ -239,6 +250,7 @@ class Model:
             'optimizer_state_dict': self.optimizer.state_dict(),
             'extra_info': extra_info
         }
+        self.save_epochs=self.epochs
         torch.save(state, model_path)
         if optimizer_path:
             torch.save(self.optimizer.state_dict(), optimizer_path)
@@ -262,6 +274,7 @@ class Model:
 
             extra_info = checkpoint.get('extra_info', None)
             print("Loaded model from : "+model_path)
+            self.save_epochs=self.epochs
             if extra_info:
                 print("Loaded extra information:", extra_info)
         except:

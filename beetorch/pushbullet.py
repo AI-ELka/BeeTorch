@@ -3,18 +3,23 @@ import time
 from beetorch import Saver,Poison
 
 
-def default_text(name,dimension,dataset,epochs,accuracy,loss,poison,poisonRate):
+def default_text(name,dimension,dataset,epochs,accuracy,loss,poison,poisonRate,finisher):
     poison_txt = Poison.toString(poison)
+    if not finisher:
+        if poison==Poison.NO_POISONING:
+            return ["["+dataset+"] Log for "+name+" with "+str(dimension)+" dimension :","Epoch : "+str(epochs)+f" | Loss : {loss:.5f}"+f" - Accuracy : {accuracy}"]
+        return ["["+dataset+"] Log for "+name+" with "+str(dimension)+f" dimension and with a {int(poisonRate*100)}% {poison_txt} :","Epoch : "+str(epochs)+f" | Loss : {loss:.5f}"+f" - Accuracy : {accuracy}"]
     if poison==Poison.NO_POISONING:
-        return ["["+dataset+"] Log for "+name+" with "+str(dimension)+" dimension :","Epoch : "+str(epochs)+f" | Loss : {loss:.5f}"+f" - Accuracy : {accuracy}"]
-    return ["["+dataset+"] Log for "+name+" with "+str(dimension)+f" dimension and with a {int(poisonRate*100)}% {poison_txt} :","Epoch : "+str(epochs)+f" | Loss : {loss:.5f}"+f" - Accuracy : {accuracy}"]
+        return ["["+dataset+"] Finished training for "+name+" with "+str(dimension)+" dimension :","Epoch : "+str(epochs)+f" | Loss : {loss:.5f}"+f" - Accuracy : {accuracy}"]
+    return ["["+dataset+"] Finished training for "+name+" with "+str(dimension)+f" dimension and with a {int(poisonRate*100)}% {poison_txt} :","Epoch : "+str(epochs)+f" | Loss : {loss:.5f}"+f" - Accuracy : {accuracy}"]
     
 
 class Pushbullet_saver(Saver):
-    def __init__(self,access_token=True,minTime=60*3):
+    def __init__(self,access_token=True,minTime=60*3,finisher=False):
         self.time = time.time()
         self.minTime=minTime
         self.texer = default_text
+        self.finisher=finisher
         self.name=""
         self.dimension=0
         self.dataset=""
@@ -39,7 +44,7 @@ class Pushbullet_saver(Saver):
             return
         self.time=time.time()
         try:
-            msg=default_text(self.name,self.dimension,self.dataset,epochs,accuracy,loss,self.poison,self.poisonRate)
+            msg=default_text(self.name,self.dimension,self.dataset,epochs,accuracy,loss,self.poison,self.poisonRate,self.finisher)
             self.channel.push_note(msg[0],msg[1])
         except:
             self.api = Pushbullet(self.access_token)
