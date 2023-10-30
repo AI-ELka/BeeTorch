@@ -18,7 +18,7 @@ class Pushbullet_saver(Saver):
         self.dataset=""
         if access_token==True:
             authF = open('conf/pushbullet.txt', 'r')
-            access_token = authF.readline()
+            access_token = authF.readline().rstrip()
         self.api = Pushbullet(access_token)
         self.channel=self.api.channels[0]
         super().__init__()

@@ -51,7 +51,7 @@ class Model:
         self.epochs = epochs
         self.log = log
         self.every = 100
-        self.saveEvery = 5
+        self.saveEvery = 500
         self.format = format
         self.dataset="MNIST"
         self.operator=True
@@ -194,8 +194,9 @@ class Model:
         predicted = self.model(X)
         if self.device=='cuda':
             predicted = predicted.to("cpu")
+        dataYTestCPU = self.dataYTest.cpu()
         for i in range(len(X)):
-            if operator(predicted[i].to().detach().numpy(),self.dataYTest[i]):
+            if operator(predicted[i].detach().numpy(),dataYTestCPU[i]):
                 numberGood+=1
         return numberGood/len(X)
 

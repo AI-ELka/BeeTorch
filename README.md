@@ -4,3 +4,9 @@ This is a pytorch based library to make it easy to train and test machine learni
 
 It also contains a part to get notifications (through slack) to stay notified when your model stopped training, got the desired accuracy, etc..
 
+Here are the dependencies :
+
+- numpy
+- torch, torchmetrics
+- mysql-connector-python
+- pushbullet.py
