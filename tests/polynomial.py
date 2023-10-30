@@ -89,7 +89,7 @@ model.load_model()
 # Adding SQL saver abd Pushbullet notification system, with frequency of 4, resp2 every log
 # Note that you should have files conf/sql.txt and conf/pushbullet.txt containing access tokens
 model.add_saver(SQL_saver(),2)
-model.add_saver(Pushbullet_saver(),4)
+model.add_saver(Pushbullet_saver(),10)
 
 def operator(p,y):
     if(np.argmax(p)==np.argmax(y)):

@@ -1,5 +1,5 @@
 from pushbullet import Pushbullet
-
+import time
 from beetorch import Saver,Poison
 
 
@@ -11,7 +11,9 @@ def default_text(name,dimension,dataset,epochs,accuracy,loss,poison,poisonRate):
     
 
 class Pushbullet_saver(Saver):
-    def __init__(self,access_token=True):
+    def __init__(self,access_token=True,minTime=60*3):
+        self.time = time.time()
+        self.minTime=minTime
         self.texer = default_text
         self.name=""
         self.dimension=0
@@ -28,6 +30,9 @@ class Pushbullet_saver(Saver):
     def save_log(self,epochs,accuracy,loss):
         if not self.initiallized:
             return
+        if self.minTime>time.time()-self.time:
+            return
+        self.time=time.time()
         try:
             msg=default_text(self.name,self.dimension,self.dataset,epochs,accuracy,loss,self.poison,self.poisonRate)
             self.channel.push_note(msg[0],msg[1])
