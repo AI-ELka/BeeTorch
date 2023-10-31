@@ -20,6 +20,9 @@ class LinearRegressionModel(Model):
         super().__init__(dataX,dataY,name,learning_rate,epochs,log,format,device)
         self.model = torch.nn.Linear(self.dataX.size(1), self.dataY.size(1), bias=True).to(self.device).double()
         self.optimizer = torch.optim.SGD(self.model.parameters(), learning_rate)
+        # better to use ADAM optimizer
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate) 
+
 
     def get_dimension(self):
         """Get the dimensions of the model's weight."""

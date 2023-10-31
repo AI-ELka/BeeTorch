@@ -281,7 +281,7 @@ class Model:
             checkpoint = torch.load(model_path)
             self.epochs = checkpoint['epoch']
             self.model.load_state_dict(checkpoint['model_state_dict'])
-            if optimizer_path:
+            if optimizer_path: ### This line should be removed because we should load the optimizer even if we don't have the optimizer path as it is already saved
                 self.optimizer.load_state_dict(torch.load(optimizer_path))
 
             extra_info = checkpoint.get('extra_info', None)
