@@ -9,6 +9,17 @@ class PoisonClass:
         self.NO_POISONING = 0
         self.LABEL_FLIPPING = 1
         self.GRADIENT_POISONING=2
+
+    def init_poison(self,poison,poisonRate,dataX,dataY):
+        if poison==self.LABEL_FLIPPING:
+            print("Poisoning with Label Flipping at a rate of :",poisonRate)
+            for i in range(int(len(dataY)*poisonRate)):
+                temp = dataY[i][0]
+                for j in range(len(dataY[i])-1):
+                    dataY[i][j]=dataY[i][j+1]
+                dataY[i][len(dataY[i])-1]=temp
+
+        return dataX,dataY
         
     def toString(self,poison):
         if poison==self.NO_POISONING:
@@ -53,7 +64,7 @@ class Model:
         self.save_epochs = 0
         self.log = log
         self.every = 100
-        self.saveEvery = 500
+        self.saveEvery = 200
         self.format = format
         self.dataset="MNIST"
         self.operator=True
@@ -177,7 +188,8 @@ class Model:
                         x[0].save_log(self.epochs,accuracy,loss.item())
             if (self.epochs) % self.saveEvery == 0:
                 self.save_model()
-        if epochs>0:
+        if epochs>0 and len(self.finishers)>0:
+            accuracy = self.accuracy()
             for finisher in self.finishers:
                 finisher.save_log(self.epochs,accuracy,loss.item())
             
