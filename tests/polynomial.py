@@ -1,7 +1,16 @@
+from beetorch import Poison
 d = int(input("Type in the polynomial degree : "))
 if d<=0:
     print("error")
     exit()
+poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping : "))
+if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING):
+    print("error")
+poisonRate=0
+if poison!=0:
+    poisonRate = float(input("What is the poison rate : "))
+if poisonRate<0 or poisonRate>1:
+    print("error")
 print("Importing....")
 
 from beetorch import Poison
@@ -78,16 +87,17 @@ def polyRegFormat(X):
         return X
 
 print("Creating model....")
-model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression",format=polyRegFormat,learning_rate=0.015)
+model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression",format=polyRegFormat,learning_rate=0.010+d/20*0.012)
 
 # Choose poisoning (For now just for logging, in the future will be effective)
-model.set_poison(Poison.NO_POISONING,0)
+model.set_poison(poison,poisonRate)
 
 model.load_model()
 
 
 # Adding SQL saver abd Pushbullet notification system, with frequency of 4, resp2 every log
 # Note that you should have files conf/sql.txt and conf/pushbullet.txt containing access tokens
+
 model.add_saver(SQL_saver(),2)
 model.add_finisher(Pushbullet_saver(finisher=True))
 
@@ -104,6 +114,7 @@ model.set_default_validator(operator)
 
 print("Starting training....\n")
 model.every=100
+model.saveEvery=100
 model.train(0)
 print("Finished training....")
 print(model.accuracy(format=False))

@@ -14,7 +14,7 @@ class PoisonClass:
         if poison==self.LABEL_FLIPPING:
             print("Poisoning with Label Flipping at a rate of :",poisonRate)
             for i in range(int(len(dataY)*poisonRate)):
-                temp = dataY[i][0]
+                temp = dataY[i][0].item()
                 for j in range(len(dataY[i])-1):
                     dataY[i][j]=dataY[i][j+1]
                 dataY[i][len(dataY[i])-1]=temp
@@ -92,6 +92,7 @@ class Model:
         self.poisonRate=poisonRate
         for saver in self.savers:
             saver.init(saver.name,saver.dimension,saver.dataset,poisoning,poisonRate)
+        self.dataX,self.dataY = Poison.init_poison(self.poisoning,self.poisonRate,self.dataX,self.dataY)
 
     def set_device(self, device=None):
         """
