@@ -51,7 +51,7 @@ def label_construct(poison):
     if poison[0]==0:
         string += "No poison"
     elif poison[0]==1:
-        string+="Label Flipping at"+str(int(poison[1]*100))+" %"
+        string+="Label Flipping at "+str(int(poison[1]*100))+"%"
     return string
 def all():
     for i,poison in enumerate(poisons):    
