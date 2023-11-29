@@ -169,8 +169,8 @@ class Model:
         for self.epochs in range(self.epochs+1, self.epochs + epochs+1):
             if batch:
                 for batch_x, batch_y in train_loader:
-                    batch_x = batch_x.to(self.device)#.double()
-                    batch_y = batch_y.to(self.device)#.double()
+                    batch_x = batch_x.to(self.device).double()
+                    batch_y = batch_y.to(self.device).double()
                     y_predicted = self.model(batch_x)
                     loss = self.criterion(y_predicted, batch_y)
                     loss.backward()
