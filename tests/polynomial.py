@@ -7,8 +7,8 @@ poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poi
 if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING):
     print("error")
 poisonRate=0
-if poison!=0:
-    poisonRate = float(input("What is the poison rate : "))
+#if poison!=0:
+poisonRate = float(input("What is the poison rate : "))
 if poisonRate<0 or poisonRate>1:
     print("error")
 try_num = int(input("What is the try : "))
