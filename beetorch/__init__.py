@@ -63,6 +63,7 @@ class Model:
         self.epochs = epochs
         self.save_epochs = 0
         self.log = log
+        self.tries = 0
         self.every = 100
         self.saveEvery = 200
         self.format = format
@@ -79,11 +80,11 @@ class Model:
         self.dataset=dataS
 
     def add_saver(self,saver,every=1):
-        saver.init(self.name,self.get_dimension(),self.dataset,self.poisoning,self.poisonRate)
+        saver.init(self.name,self.get_dimension(),self.dataset,self.poisoning,self.poisonRate,self.tries)
         self.savers.append([saver,every])
 
     def add_finisher(self,saver):
-        saver.init(self.name,self.get_dimension(),self.dataset,self.poisoning,self.poisonRate)
+        saver.init(self.name,self.get_dimension(),self.dataset,self.poisoning,self.poisonRate,self.tries)
         self.finishers.append(saver)
 
     def set_poison(self,poisoning,poisonRate):
@@ -93,6 +94,10 @@ class Model:
         for saver in self.savers:
             saver.init(saver.name,saver.dimension,saver.dataset,poisoning,poisonRate)
         self.dataX,self.dataY = Poison.init_poison(self.poisoning,self.poisonRate,self.dataX,self.dataY)
+    
+    def set_try(self,number=0):
+        """Setting the try number,0 by default"""
+        self.number=0
 
     def set_device(self, device=None):
         """
@@ -256,7 +261,10 @@ class Model:
             extra_info (dict, optional): Additional information to save alongside the model.
         """
         if model_path==True:
-            model_path=f"saves/{self.dataset}_{self.name}_{self.get_dimension()}_{self.poisoning}_{int(self.poisonRate*1000)}.model"
+            model_path=f"saves/{self.dataset}_{self.name}_{self.get_dimension()}_{self.poisoning}_{int(self.poisonRate*1000)}"
+            if self.tries!=0:
+                model_path+=f"_{self.tries}"
+            model_path+=".model"
         state = {
             'epoch': self.epochs,
             'model_state_dict': self.model.state_dict(),
@@ -278,12 +286,15 @@ class Model:
         """
         try:
             if model_path==True:
-                model_path=f"saves/{self.dataset}_{self.name}_{self.get_dimension()}_{self.poisoning}_{int(self.poisonRate*1000)}.model"
+                model_path=f"saves/{self.dataset}_{self.name}_{self.get_dimension()}_{self.poisoning}_{int(self.poisonRate*1000)}"
+                if self.tries!=0:
+                    model_path+=f"_{self.tries}"
+                model_path+=".model"
             checkpoint = torch.load(model_path)
             self.epochs = checkpoint['epoch']
             self.model.load_state_dict(checkpoint['model_state_dict'])
-           
-            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            if optimizer_path: ### This line should be removed because we should load the optimizer even if we don't have the optimizer path as it is already saved
+                self.optimizer.load_state_dict(torch.load(optimizer_path))
 
             extra_info = checkpoint.get('extra_info', None)
             print("Loaded model from : "+model_path)
@@ -306,12 +317,13 @@ class Saver:
     def __init__(self):
         self.initiallized=False
 
-    def init(self,name,dimension,dataset,poison,poisonRate):
+    def init(self,name,dimension,dataset,poison,poisonRate,tries=0):
         self.name=name
         self.dimension=dimension
         self.dataset=dataset
         self.poison=poison
         self.poisonRate=poisonRate
+        self.tries=tries
         self.initiallized=True
 
     def save_log(self,epochs,accuracy,loss):
