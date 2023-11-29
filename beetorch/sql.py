@@ -28,7 +28,7 @@ class SQL_saver(Saver):
         return
     
     
-    def init(self,name,dimension,dataset,poison,poisonRate):
+    def init(self,name,dimension,dataset,poison,poisonRate,tries=0):
         self.db = mysql.connect(
             host = self.host,
             user = self.username,
@@ -36,6 +36,7 @@ class SQL_saver(Saver):
             database = self.database
         )
         self.cursor = self.db.cursor()
+        self.tries=tries
 
         self.cursor.execute("SELECT id FROM models WHERE name=%s and dimension=%s",(name,dimension))
         result=self.cursor.fetchall()
@@ -52,8 +53,8 @@ class SQL_saver(Saver):
     async def save_log_async(self,epochs,accuracy,loss):
         if not self.initiallized:
             return False
-        sql= "INSERT INTO logs (model_id,epochs,accuracy,loss,poison,poison_rate) VALUES (%s,%s,%s,%s,%s,%s)"
-        val= (self.model_id,epochs,accuracy,loss,self.poison,self.poisonRate)
+        sql= "INSERT INTO logs (model_id,epochs,accuracy,loss,poison,poison_rate,try) VALUES (%s,%s,%s,%s,%s,%s,%s)"
+        val= (self.model_id,epochs,accuracy,loss,self.poison,self.poisonRate,self.tries)
         self.cursor.execute(sql,val)
         self.db.commit()
         return True
