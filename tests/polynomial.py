@@ -6,6 +6,7 @@ if d<=0:
 poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping : "))
 if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING):
     print("error")
+try_num = int(input("What is the try : "))
 poisonRate=0
 if poison!=0:
     poisonRate = float(input("What is the poison rate : "))
@@ -89,6 +90,7 @@ def polyRegFormat(X):
 print("Creating model....")
 model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression",format=polyRegFormat,learning_rate=0.010+d/20*0.012)
 
+model.set_try(try_num)
 # Choose poisoning (For now just for logging, in the future will be effective)
 model.set_poison(poison,poisonRate)
 
