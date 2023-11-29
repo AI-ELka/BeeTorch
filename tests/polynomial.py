@@ -6,12 +6,12 @@ if d<=0:
 poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping : "))
 if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING):
     print("error")
-try_num = int(input("What is the try : "))
 poisonRate=0
 if poison!=0:
     poisonRate = float(input("What is the poison rate : "))
 if poisonRate<0 or poisonRate>1:
     print("error")
+try_num = int(input("What is the try : "))
 print("Importing....")
 
 from beetorch import Poison
