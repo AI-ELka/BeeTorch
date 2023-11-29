@@ -81,8 +81,8 @@ def show_detail(poison=0,poisonRate=0):
     plt.show()
 
 
-def evolution(model_id,poison=0,poisonRate=0):
-    cursor.execute(f"SELECT epochs,accuracy FROM logs WHERE model_id={model_id} and poison={poison} and ABS(poison_rate-{poisonRate})<0.00001 ORDER BY epochs")
+def evolution(model_id,poison=0,poisonRate=0,try_num=0):
+    cursor.execute(f"SELECT epochs,accuracy FROM logs WHERE model_id={model_id} and poison={poison} and ABS(poison_rate-{poisonRate})<0.00001 and try={try_num} ORDER BY epochs")
 
     result=cursor.fetchall()
     result=np.array(result)
@@ -90,8 +90,8 @@ def evolution(model_id,poison=0,poisonRate=0):
     plt.title(str(model_id))
     plt.show()
 
-def loss(model_id):
-    cursor.execute(f"SELECT epochs,loss FROM logs WHERE model_id={model_id} ORDER BY epochs")
+def loss(model_id,poison=0,poisonRate=0,try_num=0):
+    cursor.execute(f"SELECT epochs,loss FROM logs WHERE model_id={model_id} and poison={poison} and ABS(poison_rate-{poisonRate})<0.00001 and try={try_num} ORDER BY epochs")
 
     result=cursor.fetchall()
     result=np.array(result)
