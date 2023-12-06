@@ -46,7 +46,7 @@ class SQL_saver(Saver):
             self.model_id = self.cursor.lastrowid
         else:
             self.model_id=result[0][0]
-        super().init(name,dimension,dataset,poison,poisonRate)
+        super().init(name,dimension,dataset,poison,poisonRate,tries)
         return True
     
     
