@@ -97,7 +97,7 @@ class Model:
     
     def set_try(self,number=0):
         """Setting the try number,0 by default"""
-        self.number=0
+        self.tries=number
 
     def set_device(self, device=None):
         """
