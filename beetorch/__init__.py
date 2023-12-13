@@ -162,6 +162,9 @@ class Model:
             batch_size (int): Batch size for training data.
         """
         epochs = epochs if epochs is not None else self.epochs
+        if(self.dataX.dtype!=self.dataY.dtype):
+            print("Error: dataX and dataY data types don't match")
+            return 0
         accuracy=-1
         if batch:
             train_loader = DataLoader(self.train_data, batch_size=batch_size, shuffle=True)
@@ -169,8 +172,8 @@ class Model:
         for self.epochs in range(self.epochs+1, self.epochs + epochs+1):
             if batch:
                 for batch_x, batch_y in train_loader:
-                    batch_x = batch_x.to(self.device).double()
-                    batch_y = batch_y.to(self.device).double()
+                    batch_x = batch_x.to(self.device)
+                    batch_y = batch_y.to(self.device)
                     y_predicted = self.model(batch_x)
                     loss = self.criterion(y_predicted, batch_y)
                     loss.backward()
@@ -178,6 +181,8 @@ class Model:
                     self.optimizer.zero_grad()     
             else:
                 y_predicted=self.model(self.dataX)
+                print("y_predicted",y_predicted.dtype)
+                print("self.dataY",self.dataY.dtype)
                 loss = self.criterion(y_predicted, self.dataY)
                 loss.backward()
                 self.optimizer.step()

@@ -88,6 +88,8 @@ def polyRegFormat(X):
             X = torch.cat((X,Y),-1)
         return X
 
+dataY=dataY.float()
+
 print("Creating model....")
 model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression_Float32",format=polyRegFormat,learning_rate=0.010+d/20*0.012)
 
