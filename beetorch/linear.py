@@ -22,7 +22,6 @@ class LinearRegressionModel(Model):
         if self.dataX.dtype==torch.float64:
             self.model=self.model.double()
         elif self.dataX.dtype==torch.float32:
-            print("debug")
             self.model=self.model.float()
         #self.optimizer = torch.optim.SGD(self.model.parameters(), learning_rate)
         # better to use ADAM optimizer
