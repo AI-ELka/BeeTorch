@@ -117,7 +117,7 @@ model.set_default_validator(operator)
 print("Starting training....\n")
 model.every=100
 model.saveEvery=100
-model.train(10000)
+model.train(0)
 print("Finished training....")
 print(model.accuracy(format=False))
 

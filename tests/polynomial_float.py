@@ -48,14 +48,14 @@ newDataY = torch.tensor(Y2)
 def format(X):
     if not torch.is_tensor(X):
         X = torch.tensor(X)
-    X=torch.float(X)
+    X=X.float()
     X = torch.flatten(X,start_dim=1)
     X=X/256/d
     arr = X.numpy()
     L = X.size()[1]
     Z_list=[]
     for i in range(d):
-        Z_list.append(torch.tensor(np.zeros((len(X),i+1))))
+        Z_list.append(torch.tensor(np.zeros((len(X),i+1)),dtype=torch.float32))
     temp_list=[]
     for i in range(d):
         if i==0:
@@ -89,7 +89,7 @@ def polyRegFormat(X):
         return X
 
 print("Creating model....")
-model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression",format=polyRegFormat,learning_rate=0.010+d/20*0.012)
+model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression_Float32",format=polyRegFormat,learning_rate=0.010+d/20*0.012)
 
 model.set_try(try_num)
 # Choose poisoning (For now just for logging, in the future will be effective)
