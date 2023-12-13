@@ -181,8 +181,6 @@ class Model:
                     self.optimizer.zero_grad()     
             else:
                 y_predicted=self.model(self.dataX)
-                print("y_predicted",y_predicted.dtype)
-                print("self.dataY",self.dataY.dtype)
                 loss = self.criterion(y_predicted, self.dataY)
                 loss.backward()
                 self.optimizer.step()
