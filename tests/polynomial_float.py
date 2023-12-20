@@ -91,7 +91,7 @@ def polyRegFormat(X):
 dataY=dataY.float()
 
 print("Creating model....")
-model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression_Float32",format=polyRegFormat,learning_rate=0.010+d/20*0.012)
+model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression_Float32",format=polyRegFormat,learning_rate=0.10+d/20*0.006)
 model.set_optimizer(torch.optim.SGD)
 model.set_try(try_num)
 # Choose poisoning (For now just for logging, in the future will be effective)
