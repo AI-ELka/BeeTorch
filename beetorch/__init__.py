@@ -147,7 +147,7 @@ class Model:
         """
         if learning_rate:
             learning_rate = self.learning_rate
-        self.optimizer = opti(self.model.parameters(), learning_rate)
+        self.optimizer = opti(self.model.parameters(), lr=learning_rate)
 
     def get_dimension(self):
         """Get the dimensions of the model's weight."""
