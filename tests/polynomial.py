@@ -86,9 +86,25 @@ def polyRegFormat(X):
             Y=Y*Xt
             X = torch.cat((X,Y),-1)
         return X
+# # we can use the following code to do poly_regression with X ... X^n and all the combinations of Xi Xj
+# from sklearn.datasets import fetch_openml
+# from sklearn.preprocessing import PolynomialFeatures
+# import numpy as np
+
+# # Load MNIST dataset
+# X, y = fetch_openml('mnist_784', version=1, return_X_y=True)
+
+# # Create a PolynomialFeatures object with degree 2
+# poly = PolynomialFeatures(2)
+
+# # Transform X to include polynomial features
+# X_transformed = poly.fit_transform(X)
+
+# print(X_transformed.shape)
+    
 
 print("Creating model....")
-model = LinearRegressionModel(dataX,dataY,"Polynomial_Regression",format=polyRegFormat,learning_rate=0.06+d/20*0.012)
+model = LinearRegressionModel(dataX,dataY,"Polynomial_testing",format=polyRegFormat,learning_rate=0.06+d/20*0.012)
 
 model.set_try(try_num)
 # Choose poisoning (For now just for logging, in the future will be effective)
@@ -116,8 +132,9 @@ model.set_default_validator(operator)
 
 print("Starting training....\n")
 model.every=100
-model.saveEvery=100
-model.train(0)
+model.saveEvery=100000
+model.train(500)
 print("Finished training....")
 print(model.accuracy(format=False))
+
 

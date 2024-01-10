@@ -44,8 +44,9 @@ def show(poison=0,poisonRate=0,detail=False):
         print(result)
 
 treshhold = [2000,6000]
-poisons = ((0,0),(1,.1),(1,.2))
-colors = ('blue','red','green')
+trie = 'and try=1'
+poisons = ((0,0),(1,.1),(1,.2),(1,.3),(1,.4))
+colors = ('blue','red','green','purple','orange')
 def label_construct(poison):
     string=""
     if poison[0]==0:
@@ -53,12 +54,20 @@ def label_construct(poison):
     elif poison[0]==1:
         string+="Label Flipping at "+str(int(poison[1]*100))+"%"
     return string
-def all():
+def all(float64=False):
     for i,poison in enumerate(poisons):    
-        cursor.execute(f"SELECT model_id,dimension,max(accuracy) from logs,models where models.name='Polynomial_Regression_Float32' and logs.model_id=models.id and poison={poison[0]} and ABS(poison_rate-{poison[1]})<0.00001 GROUP BY model_id")
+        cursor.execute(f"SELECT model_id,dimension,max(accuracy) from logs,models where models.name='Polynomial_Regression_Float32' and logs.model_id=models.id {trie} and poison={poison[0]} and ABS(poison_rate-{poison[1]})<0.00001 GROUP BY model_id")
         result=cursor.fetchall()
         result = np.array(result)
         plt.scatter(result[:,1],result[:,2],color=colors[i],label=label_construct(poison))
+        if float64:
+            try:
+                cursor.execute(f"SELECT model_id,dimension,max(accuracy) from logs,models where models.name='Polynomial_Regression' and logs.model_id=models.id and poison={poison[0]} and ABS(poison_rate-{poison[1]})<0.00001 GROUP BY model_id")
+                result=cursor.fetchall()
+                result = np.array(result)
+                plt.scatter(result[:,1],result[:,2],color=colors[i],marker=',')
+            except:
+                1==1
     plt.legend()
     plt.show()
 
