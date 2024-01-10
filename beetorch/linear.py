@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Create a RegressionModel instance, set data, and train the model.
     dataX_train = torch.rand((100, 1))  # Example training data
     dataY_train = 2 * dataX_train + 1  # Example training labels
-    model = RegressionModel(dataX_train, dataY_train)
+    model = LinearRegressionModel(dataX_train, dataY_train)
     model.train(epochs=200)
     
     # Set testing data and compute accuracy
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     # Save and load the model
     model.save_model("my_model.pth")
-    loaded_model = RegressionModel(dataX_train, dataY_train)
+    loaded_model = LinearRegressionModel(dataX_train, dataY_train)
     loaded_model.load_model("my_model.pth")
     loaded_model.set_testing_data(dataX_test, dataY_test)
     test_accuracy_loaded = loaded_model.accuracy()

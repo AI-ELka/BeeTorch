@@ -3,6 +3,7 @@ import numpy as np
 import torchmetrics
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
+import random
 
 class PoisonClass:
     def __init__(self):
@@ -20,6 +21,24 @@ class PoisonClass:
                 dataY[i][len(dataY[i])-1]=temp
 
         return dataX,dataY
+    
+    
+
+    def init_randompoison(self, poison, poisonRate, dataX, dataY):
+        if poison == self.LABEL_FLIPPING:
+            print("Poisoning with Label Flipping at a rate of :", poisonRate)
+            indices = random.sample(range(len(dataY)), int(len(dataY) * poisonRate))
+
+            for i in indices: 
+                temp = dataY[i][0].item()
+                flip=10
+                for _ in range(flip):
+                    random_index = random.randint(0, 9)  # 10 classes
+                    dataY[i][random_index], temp = temp, dataY[i][random_index]
+                dataY[i][len(dataY[i]) - 1] = temp
+
+        return dataX, dataY
+
         
     def toString(self,poison):
         if poison==self.NO_POISONING:
@@ -93,7 +112,7 @@ class Model:
         self.poisonRate=poisonRate
         for saver in self.savers:
             saver.init(saver.name,saver.dimension,saver.dataset,poisoning,poisonRate)
-        self.dataX,self.dataY = Poison.init_poison(self.poisoning,self.poisonRate,self.dataX,self.dataY)
+        self.dataX,self.dataY = Poison.init_randompoison(self.poisoning,self.poisonRate,self.dataX,self.dataY)
     
     def set_try(self,number=0):
         """Setting the try number,0 by default"""
@@ -239,6 +258,33 @@ class Model:
             if operator(predicted[i].detach().numpy(),dataYTestCPU[i]):
                 numberGood+=1
         return numberGood/len(X)
+    
+
+    # def accuracy(self, format=False):
+    #     print('entered accuracy!')
+    #     """
+    #     Args:
+    #         format (bool): Whether to format test data using the set format function.
+
+    #     Returns:
+    #         float: Accuracy of the model.
+    #     """
+    #     if not hasattr(self, 'dataXTest') or not hasattr(self, 'dataYTest'):
+    #         raise Exception("No default testing data specified. Use set_testing_data(dataXTest, dataYTest).")
+        
+    #     X = self.format(self.dataXTest) if format else self.dataXTest
+    #     X = X.to(self.device)
+    #     predicted = self.model(X)
+    #     if self.device == 'cuda':
+    #         predicted = predicted.to("cpu")
+
+    #     # # Convert probabilities to class labels
+    #     # predicted_labels = torch.argmax(predicted, dim=1)
+
+    #     accuracy = torchmetrics.functional.accuracy(predicted, self.dataYTest,task='multiclass',num_classes=10)
+        
+    #     print(accuracy.item())
+    #     return accuracy.item()
 
     def set_testing_data(self, dataX, dataY,format=True):
         """

@@ -19,7 +19,10 @@ implement things like convolution in D to increase the dimension (we can use smt
 
 # BEEEEEEEtorch
 
-BEEEEEEEtorch is a PyTorch-based library designed to simplify the training and testing of machine learning models. It also includes features for receiving notifications (via Slack or Pushbullet) about your model's progress, such as when training has stopped or a desired accuracy has been achieved.
+Beetorch is a PyTorch-based library designed to simplify the training and testing of machine learning models. It also includes features for receiving notifications (via Slack or Pushbullet) about your model's progress, such as when training has stopped or a desired accuracy has been achieved.
+--------------------------------------------------------------------------------------
+- Added randomness to the label flipping
+
 
 ## Features
 
