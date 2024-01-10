@@ -17,25 +17,20 @@ We can't save all models locally in the saves file
 Make a polynomial and kernel classes (and use sklearn to implement them)
 implement things like convolution in D to increase the dimension (we can use smthg like a sliding window and insert between pixels the sum/product/non-linearity of adjacent matrices (better do it on 2D where adjacency is more relevent then flatten )) -->
 
-# BEEEEEEEtorch
+# Overview
 
-BEEEEEEEtorch is a PyTorch-based library designed to simplify the training and testing of machine learning models. It also includes features for receiving notifications (via Slack or Pushbullet) about your model's progress, such as when training has stopped or a desired accuracy has been achieved.
+Beetorch is a PyTorch-based library designed to simplify testing the robustness of machine learning models. It also includes features for receiving notifications (via Slack or Pushbullet) about your model's progress, such as when training has stopped or a desired accuracy has been achieved.
+--------------------------------------------------------------------------------------
 
-## Features
-
-- Simplified training and testing of machine learning models
-- Notifications via Slack or Pushbullet when your model reaches certain milestones
-
-## Dependencies
-
-To use BEEEEEEEtorch, you will need the following Python packages:
-
-- numpy
-- torch, torchmetrics
-- mysql-connector-python
-- pushbullet.py
 
 ## Installation
+
+To use Beetorch, you will need the following Python packages:
+
+* numpy
+* torch, torchmetrics
+* mysql-connector-python
+* pushbullet.py
 
 You can install these packages using pip:
 
@@ -43,12 +38,25 @@ You can install these packages using pip:
 pip install numpy torch torchmetrics mysql-connector-python pushbullet.py
 ```
 
-## To-Do List
+## Features
+### PoisonClass
+The PoisonClass in beetorch/__init__.py is used to handle poisoning of the data. It provides methods to initialize poison and convert poison to string.
+
+### Model
+The Model class in beetorch/__init__.py is the main class for creating and training machine learning models.
+
+### Saver
+The Saver class in beetorch/__init__.py is used to save the state of the model.
+
+### Pushbullet_saver
+The Pushbullet_saver class in beetorch/pushbullet.py extends the Saver class and is used to send notifications about the model's progress via Pushbullet.
+
+<!-- ## To-Do List
 
 - **Improve Model Accuracy:** Explore the use of Support Vector Machines (SVMs), kernel regression, and polynomial regression with grid search using Scikit-learn to potentially improve model accuracy.
 - **Model Saving:** Address the issue of not being able to save all models locally in the 'saves' file.
 - **Class Creation:** Create Polynomial and Kernel classes, leveraging Scikit-learn for their implementation.
-- **Dimensionality Increase:** Implement techniques such as convolution in D to increase the dimensionality of the data. Consider using a sliding window approach and inserting the sum, product, or a non-linearity of adjacent matrices between pixels. This might be more effective when applied to 2D data (where adjacency is more relevant) before flattening.
+- **Dimensionality Increase:** Implement techniques such as convolution in D to increase the dimensionality of the data. Consider using a sliding window approach and inserting the sum, product, or a non-linearity of adjacent matrices between pixels. This might be more effective when applied to 2D data (where adjacency is more relevant) before flattening. -->
 
 <!-- ## License
 
