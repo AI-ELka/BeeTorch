@@ -9,7 +9,7 @@ class PoisonClass:
     def __init__(self):
         self.NO_POISONING = 0
         self.LABEL_FLIPPING = 1
-        self.GRADIENT_POISONING=2
+        self.CLASSIC_GRADIENT_ATTACK=2
 
     def init_poison(self,poison,poisonRate,dataX,dataY):
         if poison==self.LABEL_FLIPPING:
@@ -19,8 +19,34 @@ class PoisonClass:
                 for j in range(len(dataY[i])-1):
                     dataY[i][j]=dataY[i][j+1]
                 dataY[i][len(dataY[i])-1]=temp
+        elif poison==self.CLASSIC_GRADIENT_ATTACK:
+            print("Poisoning with Fast Gradient Sign at a rate of :",poisonRate)
 
         return dataX,dataY
+    
+    def delegateTraining(self,poison):
+        if poison==self.CLASSIC_GRADIENT_ATTACK:
+            return True
+        return False
+    
+    def training_poison(self,poison,poisonRate,dataX,dataY,criterion,optimizer,model):
+        if poison==self.CLASSIC_GRADIENT_ATTACK:
+            rateLimit = int(len(dataY)*poisonRate)
+            y_predictedClean=model(dataX[rateLimit:])
+            y_predictedPoison=model(dataX[:rateLimit])
+            lossClean = criterion(y_predictedClean, dataY[rateLimit:])
+            lossPoison = criterion(y_predictedPoison, dataY[:rateLimit])
+            loss = (1-poisonRate)*lossClean - poisonRate*lossPoison
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            return loss
+        y_predicted=self.model(self.dataX)
+        loss = self.criterion(y_predicted, self.dataY)
+        loss.backward()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+        return loss
     
     
 
@@ -199,11 +225,14 @@ class Model:
                     self.optimizer.step()
                     self.optimizer.zero_grad()     
             else:
-                y_predicted=self.model(self.dataX)
-                loss = self.criterion(y_predicted, self.dataY)
-                loss.backward()
-                self.optimizer.step()
-                self.optimizer.zero_grad()  
+                if Poison.delegateTraining(self.poisoning):
+                    loss = Poison.training_poison(self.poisoning,self.poisonRate,self.dataX,self.dataY,self.criterion,self.optimizer,self.model)
+                else:
+                    y_predicted=self.model(self.dataX)
+                    loss = self.criterion(y_predicted, self.dataY)
+                    loss.backward()
+                    self.optimizer.step()
+                    self.optimizer.zero_grad()
             accuracy=False             
 
             if (self.epochs) % self.every == 0:
