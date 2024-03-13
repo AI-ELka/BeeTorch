@@ -1,21 +1,25 @@
 from beetorch import Poison
 d = int(input("Type in the polynomial degree : "))
+#d=1
 if d<=0:
     print("error")
     exit()
-poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping : "))
-if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING):
+poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping, {Poison.CLASSIC_GRADIENT_ATTACK} for gradient attack : "))
+#poison=0
+if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING,Poison.CLASSIC_GRADIENT_ATTACK):
     print("error")
 poisonRate=0
 #if poison!=0:
+#
 poisonRate = float(input("What is the poison rate : "))
+#poisonRate=0.00
 if poisonRate<0 or poisonRate>1:
     print("error")
-try_num = int(input("What is the try : "))
+try_num = 0#int(input("What is the try : "))
 print("Importing....")
 
 from beetorch import Poison
-from beetorch.linear.linear import LinearRegressionModel
+from beetorch.linear import RobustLinearRegressionModel
 from beetorch.sql import SQL_saver
 from beetorch.pushbullet import Pushbullet_saver
 import numpy as np
@@ -48,13 +52,14 @@ newDataY = torch.tensor(Y2)
 def format(X):
     if not torch.is_tensor(X):
         X = torch.tensor(X)
+    X=X.float()
     X = torch.flatten(X,start_dim=1)
     X=X/256/d
     arr = X.numpy()
     L = X.size()[1]
     Z_list=[]
     for i in range(d):
-        Z_list.append(torch.tensor(np.zeros((len(X),i+1))))
+        Z_list.append(torch.tensor(np.zeros((len(X),i+1)),dtype=torch.float32))
     temp_list=[]
     for i in range(d):
         if i==0:
@@ -86,26 +91,12 @@ def polyRegFormat(X):
             Y=Y*Xt
             X = torch.cat((X,Y),-1)
         return X
-# # we can use the following code to do poly_regression with X ... X^n and all the combinations of Xi Xj
-# from sklearn.datasets import fetch_openml
-# from sklearn.preprocessing import PolynomialFeatures
-# import numpy as np
 
-# # Load MNIST dataset
-# X, y = fetch_openml('mnist_784', version=1, return_X_y=True)
-
-# # Create a PolynomialFeatures object with degree 2
-# poly = PolynomialFeatures(2)
-
-# # Transform X to include polynomial features
-# X_transformed = poly.fit_transform(X)
-
-# print(X_transformed.shape)
-    
+dataY=dataY.float()
 
 print("Creating model....")
-model = LinearRegressionModel(dataX,dataY,"Polynomial_testing",format=polyRegFormat,learning_rate=0.06+d/20*0.012)
-
+model = RobustLinearRegressionModel(dataX,dataY,"Polynomial_Regression_Float32",format=polyRegFormat,learning_rate=0.10+d/20*0.006)
+model.set_optimizer(torch.optim.SGD)
 model.set_try(try_num)
 # Choose poisoning (For now just for logging, in the future will be effective)
 model.set_poison(poison,poisonRate)
@@ -132,9 +123,8 @@ model.set_default_validator(operator)
 
 print("Starting training....\n")
 model.every=100
-model.saveEvery=100000
-model.train(500)
+model.saveEvery=100
+model.train(0)
 print("Finished training....")
 print(model.accuracy(format=False))
-
 

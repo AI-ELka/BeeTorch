@@ -94,6 +94,7 @@ class Model:
             format (callable): A function to format input data.
             device (str or torch.device): 'cpu' or 'cuda' for device selection.
         """
+        self.Poison = Poison
         self.name=name
         self.savers=[]
         self.finishers=[]
@@ -114,7 +115,7 @@ class Model:
         self.format = format
         self.dataset="MNIST"
         self.operator=True
-        self.poisoning=Poison.NO_POISONING
+        self.poisoning=self.Poison.NO_POISONING
         self.poisonRate=0
 
     def set_log(self, log):
@@ -138,7 +139,7 @@ class Model:
         self.poisonRate=poisonRate
         for saver in self.savers:
             saver.init(saver.name,saver.dimension,saver.dataset,poisoning,poisonRate)
-        self.dataX,self.dataY = Poison.init_randompoison(self.poisoning,self.poisonRate,self.dataX,self.dataY)
+        self.dataX,self.dataY = self.Poison.init_randompoison(self.poisoning,self.poisonRate,self.dataX,self.dataY)
     
     def set_try(self,number=0):
         """Setting the try number,0 by default"""
@@ -225,8 +226,8 @@ class Model:
                     self.optimizer.step()
                     self.optimizer.zero_grad()     
             else:
-                if Poison.delegateTraining(self.poisoning):
-                    loss = Poison.training_poison(self.poisoning,self.poisonRate,self.dataX,self.dataY,self.criterion,self.optimizer,self.model)
+                if self.Poison.delegateTraining(self.poisoning):
+                    loss = self.Poison.training_poison(self.poisoning,self.poisonRate,self.dataX,self.dataY,self.criterion,self.optimizer,self.model)
                 else:
                     y_predicted=self.model(self.dataX)
                     loss = self.criterion(y_predicted, self.dataY)

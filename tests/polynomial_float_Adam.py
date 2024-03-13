@@ -15,7 +15,7 @@ try_num = int(input("What is the try : "))
 print("Importing....")
 
 from beetorch import Poison
-from beetorch.linear import LinearRegressionModel
+from beetorch.linear.linear import LinearRegressionModel
 from beetorch.sql import SQL_saver
 from beetorch.pushbullet import Pushbullet_saver
 import numpy as np
