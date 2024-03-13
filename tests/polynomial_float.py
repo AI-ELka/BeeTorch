@@ -3,7 +3,7 @@ d = int(input("Type in the polynomial degree : "))
 if d<=0:
     print("error")
     exit()
-poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping, {Poison.CLASSIC_GRADIENT_ATTACK} for gradient descent : "))
+poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping, {Poison.CLASSIC_GRADIENT_ATTACK} for gradient attack : "))
 if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING,Poison.CLASSIC_GRADIENT_ATTACK):
     print("error")
 poisonRate=0
@@ -15,7 +15,7 @@ try_num = int(input("What is the try : "))
 print("Importing....")
 
 from beetorch import Poison
-from beetorch.linear import LinearRegressionModel
+from beetorch.linear.linear import LinearRegressionModel
 from beetorch.sql import SQL_saver
 from beetorch.pushbullet import Pushbullet_saver
 import numpy as np

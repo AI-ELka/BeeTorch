@@ -3,6 +3,8 @@ import torchmetrics
 from beetorch import Model
 
 
+
+
 class LinearRegressionModel(Model):
     def __init__(self, dataX, dataY,name , learning_rate=0.01, epochs=0, log=False, format=lambda x: torch.tensor(x).double(), device=None):
         """
