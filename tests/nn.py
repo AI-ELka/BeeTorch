@@ -109,6 +109,7 @@ for h1, h2, h3 in zip(hidden_dim1, hidden_dim2, hidden_dim3):
     print(f"(hidden_dim1, hidden_dim1, hidden_dim1)=({h1},{h2},{h3})")
     f.write(f"\n(hidden_dim1, hidden_dim1, hidden_dim1)=({h1},{h2},{h3})")
     net = Net(input_dim, h1, h2, h3, output_dim)
+    net.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.001)
     print("training...")
