@@ -6,7 +6,7 @@ set third_dim [lindex $argv 2];
 set poison_rate [lindex $argv 3];
 set epochs [lindex $argv 4];
 
-spawn ./poly.sh
+spawn ./launchnn.sh
 
 expect >>
 

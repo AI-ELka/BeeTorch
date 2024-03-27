@@ -1,4 +1,5 @@
 import os
+import time
 
 epochs = int(input("How many epochs : "))
 
@@ -30,6 +31,7 @@ for i in range(min(len(hostname_known),len(training_set))):
     os.system(f"gnome-terminal --title=\"{title}\" -- bash -c \"cd ~;./pathtoscript/resserv.sh {host} {epochs}; \"")
     # exec bash -i
 
+time.sleep(2)
 
 for i in range(min(len(hostname_known),len(training_set))):
     #os.system("gnome-terminal -- '/bin/bash -c \"./script.sh "+hostname_known[0]+" 1 0 0 200\" '")
