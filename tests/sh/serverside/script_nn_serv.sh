@@ -10,7 +10,7 @@ spawn ./launchnn.sh
 
 expect >>
 
-send "import tests.model\n"
+send "import tests.nn\n"
 
 expect "poison rate"
 
