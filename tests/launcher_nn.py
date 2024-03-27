@@ -26,7 +26,8 @@ for i in range(min(len(hostname_known),len(training_set))):
     #os.system("gnome-terminal -- '/bin/bash -c \"./short/script.sh "+hostname_known[0]+" 1 0 0 200\" '")
     host = hostname_known[i]
     title = ""
-    os.system(f"gnome-terminal --title=\"{title}\" -- bash -c \"cd ~;./short/resserv.sh {host} {epochs}; \"")
+    # ________________________________________________________________ Change here __________________________
+    os.system(f"gnome-terminal --title=\"{title}\" -- bash -c \"cd ~;./pathtoscript/resserv.sh {host} {epochs}; \"")
     # exec bash -i
 
 
@@ -38,7 +39,8 @@ for i in range(min(len(hostname_known),len(training_set))):
     title += str(dim1)+":"+str(dim2)+":"+str(dim3)
     if pois_r>0:
         title+=" Flip "+str(int(pois_r*100)/100)
-    os.system(f"gnome-terminal --title=\"{title}\" -- bash -c \"cd ~;./script_nn.sh {host} {dim1} {dim2} {dim3} {pois_r} {epochs}; exec bash -i \"")
+    # ________________________________________________________________ Change here __________________________
+    os.system(f"gnome-terminal --title=\"{title}\" -- bash -c \"cd ~;./pathtoscript/script_nn.sh {host} {dim1} {dim2} {dim3} {pois_r} {epochs}; exec bash -i \"")
 
 if len(hostname_known)-len(training_set)<0:
     print(f"Not enough servers available for training, you need {len(training_set)-len(hostname_known)} more servers!")
