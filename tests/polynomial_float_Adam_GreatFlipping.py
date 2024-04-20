@@ -1,21 +1,20 @@
-from beetorch import Poison
 d = int(input("Type in the polynomial degree : "))
 if d<=0:
     print("error")
     exit()
-"""poison = int(input(f"What is the poisoning, {Poison.NO_POISONING} for none, {Poison.LABEL_FLIPPING} for label flipping : "))
-if poison not in (Poison.NO_POISONING,Poison.LABEL_FLIPPING):
-    print("error")"""
-poisonRate=0
+#poison=2
+poison = int(input(f"What is the poisoning, {1} for METHOD_1, {2} for METHOD_2, {3} for LABEL_FLIPPING : "))
+if poison not in (1,2,3):
+    print("error")
+poisonRate=0.45
 #if poison!=0:
-poisonRate = float(input("What is the poison rate : "))
+#poisonRate = float(input("What is the poison rate : "))
 if poisonRate<0 or poisonRate>1:
     print("error")
 try_num = int(input("What is the try : "))
 print("Importing....")
 
-from beetorch import Poison, Model
-from beetorch.linear.linear import LinearRegressionModel
+
 from beetorch.sql import SQL_saver
 from beetorch.pushbullet import Pushbullet_saver
 import numpy as np
@@ -66,7 +65,6 @@ class LinearSigmoid(torch.nn.Module):
         super().__init__()
         self.device = device if device else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.name = name
-        print(dataX.size(1), dataY.size(1))
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(dataX.size(1), dataY.size(1), bias=True),
             torch.nn.Sigmoid()
@@ -84,6 +82,16 @@ dataY=dataY.float()
 print("Creating model....")
 model = LinearSigmoid(dataX,dataY,"Polynomial_Regression_LabelDiverge")
 
+
+safeDataNumber = int((1-poisonRate)*len(dataX))
+
+if(poison==3):
+    dataY[:(len(dataX)-safeDataNumber)] = 1-dataY[:(len(dataX)-safeDataNumber)]
+    poisonRate=0
+
+safeDataNumber = int((1-poisonRate)*len(dataX))
+
+
 def train(epochs):
     epoch = 0
     criterion = torch.nn.MSELoss()
@@ -94,8 +102,48 @@ def train(epochs):
         optimizer.zero_grad()
 
             # forward + backward + optimize
-        outputs = model(dataX)
-        loss = criterion(outputs, dataY)
+        
+        outputs = model(dataX[:safeDataNumber])
+        loss = criterion(outputs, dataY[:safeDataNumber])
+        loss.backward()
+        yp=[1.0]
+        xp = dataX[:1]
+        if(poisonRate>0):
+            if poison==1:
+                yp=[1.0]
+                xp = model.layers[0].weight.grad.detach()
+                if(model(xp)<0.5):
+                    xp = 10000*xp
+                else:
+                    xp = 10000*xp
+                print(model(xp))
+                #print(xp)
+            elif poison==2:
+                yp=[1.0]
+                xp = model.layers[0].weight.grad.detach()
+                u = xp.clone()[0]
+                for i in range(len(u)-1):
+                    if u[i]!=0:
+                        break
+                u[i], u[-1] = u[-1], u[i]
+                c = xp[0,-1]
+                xp[0,-1] = xp[0,i]
+                xp[0,i] = u[i]
+                u[-1] = -(xp[0,:-1] @ u[:-1]) / xp[0,-1]
+                u[i], u[-1] = u[-1], u[i]
+                xp = u
+                xp = np.reshape(xp , (1,len(xp)))
+                l = model(10000*xp)
+                xp = 1000*xp
+                if(l<0.5):
+                    yp=[0.0]
+
+        optimizer.zero_grad()
+        outputs_p = model(xp)
+        outputs = model(dataX[:safeDataNumber])
+        loss_p = criterion(outputs_p, torch.tensor([yp]))
+        loss = criterion(outputs, dataY[:safeDataNumber])*safeDataNumber + loss_p*(len(dataX)-safeDataNumber)
+        loss = loss / len(dataX)
         loss.backward()
         optimizer.step()
 
@@ -119,3 +167,5 @@ def accuracy():
     return numberGood/len(X)
 
 
+
+train(10)
