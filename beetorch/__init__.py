@@ -197,7 +197,22 @@ class Model:
 
     def get_dimension(self):
         """Get the dimensions of the model's weight."""
-        return self.model.weight.size().detach().numpy()
+        dim=0
+        try:
+            dim = self.model.weight.size().detach().numpy()
+        except:
+            for layer in self.model:
+                try:
+                    size = list(layer.weight.size())
+                    print(size)
+                    dimt = 1
+                    for s in size:
+                        dimt*=s
+                    dim += dimt
+                except:
+                    dim+=0
+            print("dim:",dim)
+        return dim
 
     def train(self, epochs=None, batch=False, batch_size=10000):
         """
@@ -232,6 +247,7 @@ class Model:
                     y_predicted=self.model(self.dataX)
                     loss = self.criterion(y_predicted, self.dataY)
                     loss.backward()
+                    print(type(self))
                     self.optimizer.step()
                     self.optimizer.zero_grad()
             accuracy=False             

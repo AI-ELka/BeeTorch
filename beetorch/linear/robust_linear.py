@@ -42,14 +42,21 @@ class RobustPoisonClass(PoisonClass):
                 elif name=='bias':
                     LosseGradsBias.append(param.grad)
             optimizer.zero_grad()
-        weights = torch.ones(len(LosseGradsWeight))
-        LossWeightMedian = compute_geometric_median(LosseGradsWeight, weights)
-        LossBiasMedian = compute_geometric_median(LosseGradsBias, weights)
+        median=False
+        if median:
+            weights = torch.ones(len(LosseGradsWeight))
+            LossWeightMedian = compute_geometric_median(LosseGradsWeight, weights).median
+            LossBiasMedian = compute_geometric_median(LosseGradsBias, weights).median
+        else:
+            LossWeightMedian = torch.mean(torch.stack(LosseGradsWeight,dim=0),dim=0,keepdim=True)[0]
+            LosseGradsWeight = []
+            LossBiasMedian = torch.mean(torch.stack(LosseGradsBias,dim=0),dim=0,keepdim=True)[0]
+            LosseGradsBias = []
         for name, param in model.named_parameters():
                 if name=='weight':
-                    param.grad = LossWeightMedian.median
+                    param.grad = LossWeightMedian
                 elif name=='bias':
-                    param.grad = LossBiasMedian.median
+                    param.grad = LossBiasMedian
         optimizer.step()
         optimizer.zero_grad()
         return loss
