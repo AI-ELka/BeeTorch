@@ -199,4 +199,4 @@ def accuracy():
 
 
 
-train(10)
+train(1000)
