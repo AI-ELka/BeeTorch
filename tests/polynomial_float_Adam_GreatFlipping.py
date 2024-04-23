@@ -179,7 +179,7 @@ def train(epochs):
             running_loss = 0.0
     model.epoch = model.epoch+epochs
     accur = accuracy()
-    print("Finshed training for poison "+str(poison)+" with "+str(poisonRate)+" : "+str(accur))
+    print("Finshed training for poison "+str(poison)+" with ("+str(poisonRate)+", "+str(accur)+")")
 
 def accuracy():
     numberGood=0
