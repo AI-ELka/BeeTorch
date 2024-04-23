@@ -174,10 +174,12 @@ def train(epochs):
 
         # print statistics
         running_loss = loss.item()
-        if epoch % 10 == 9:    # print every 2000 mini-batches
+        if epoch % 50 == 49:    # print every 2000 mini-batches
             print(f'[{epoch + 1}] loss: {running_loss}')
             running_loss = 0.0
     model.epoch = model.epoch+epochs
+    accur = accuracy()
+    print("Finshed training for poison "+str(poison)+" with "+str(poisonRate)+" : "+str(accur))
 
 def accuracy():
     numberGood=0
