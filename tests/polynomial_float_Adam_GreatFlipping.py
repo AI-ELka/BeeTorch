@@ -145,7 +145,7 @@ def train(epochs):
                 u[-1] = -(xp[0,:-1] @ u[:-1]) / xp[0,-1]
                 u[i], u[-1] = u[-1], u[i]
                 xp = u
-                xp = np.reshape(xp , (1,len(xp)))
+                xp = torch.reshape(xp , (1,len(xp)))
                 l = model(10000*xp)
                 max = torch.max(xp)
                 min = torch.min(xp)
@@ -200,4 +200,4 @@ def accuracy():
 
 
 
-train(1000)
+train(1500)
