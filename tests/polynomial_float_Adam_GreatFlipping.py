@@ -98,6 +98,8 @@ if(poison==0):
 safeDataNumber = int((1-poisonRate)*len(dataX))
 
 
+accuracies = []
+
 def train(epochs):
     epoch = 0
     criterion = torch.nn.BCELoss()
@@ -178,8 +180,10 @@ def train(epochs):
         if epoch % 50 == 49:    # print every 2000 mini-batches
             print(f'[{epoch + 1}] loss: {running_loss}')
             running_loss = 0.0
+            accuracies.append(accuracy())
     model.epoch = model.epoch+epochs
     accur = accuracy()
+    print(accuracies)
     print("Finshed training for poison "+str(poison)+" with ("+str(pr)+", "+str(accur)+")")
 
 def accuracy():
