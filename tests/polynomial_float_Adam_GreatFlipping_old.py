@@ -8,46 +8,59 @@ if d<=0:
 poison = int(input(f"What is the poisoning, {1} for METHOD_1, {2} for METHOD_2, {0} for LABEL_FLIPPING : "))
 if poison not in (1,2,0):
     print("error")
-poisonRate=0.1
+poisonRate=0
 #if poison!=0:
-poisonRate = float(input("What is the poison rate : "))
+#poisonRate = float(input("What is the poison rate : "))
 if poisonRate<0 or poisonRate>1:
     print("error")
 try_num = 0#int(input("What is the try : "))
 print("Importing....")
 
 
-from beetorch.sql import SQL_saver
-from beetorch.pushbullet import Pushbullet_saver
-import numpy as np
 import torch
-import pandas as pd
-from datasets import load_dataset
+from torch.utils.data import Dataset
 
+torch.random.manual_seed(11)
 
-print("Importing dataset...")
-dataset = load_dataset("mnist")
-df = pd.DataFrame(dataset['train'])
+print("Generating dataset...")
+ 
+# Creating the dataset class
+class Data(Dataset):
+    # Constructor
+    def __init__(self,length,dimension,poison_rate):
+        self.dimension = dimension
+        self.x = torch.randn(length,dimension)
+        self.criteria = torch.zeros([dimension,1])
+        for i in range(dimension):
+            self.criteria[i,0]= (i/dimension)-0.5
+        crit = torch.matmul(self.x,self.criteria)
+        self.y = torch.zeros(self.x.shape[0], 1)
+        self.y[crit[:, 0] > 0.2] = 1
+        self.len = self.x.shape[0]
+        numSafe = int(self.len*poison_rate)
+        self.y[:numSafe] = 1-self.y[:numSafe]
+        self.poison_rate = poison_rate
 
-print("Baking data....")
-dataX = np.array([np.array(X) for X in df['image']])
-Y = torch.zeros(len(dataX),dtype=torch.float)
+    def dimension(self):
+        return self.dimension
+    
+    def __str__(self):
+        return "Custom Dataset, len:"+str(self.len)
+    # Getter
+    def __getitem__(self, idx):          
+        return self.x[idx], self.y[idx] 
+    # getting data length
+    def __len__(self):
+        return self.len
 
-for i in range(len(dataX)):
-    if(df['label'][i]==1):
-        Y[i]=1
+pr = poisonRate
+if poison!=0:
+    pr=0
 
-dataY = Y
+train_data = Data(90,10,0,pr)
+test_data = Data(10,10,0)
 
-
-dfT = pd.DataFrame(dataset['test'])
-Y2 = dfT['label']
-newDataX = np.array([np.array(X) for X in dfT['image']])
-Y2 = torch.zeros(len(Y2),dtype=torch.long)
-for i in range(len(newDataX)):
-    if(dfT['label'][i]==1):
-        Y2[i]=1
-newDataY = Y2
+print(train_data)
 
 def format(X):
     if not torch.is_tensor(X):
@@ -57,17 +70,15 @@ def format(X):
     X=X/256
     return X
 
-dataX = format(dataX)
-newDataX = format(newDataX)
 
 class LinearSigmoid(torch.nn.Module):
     
-    def __init__(self, dataX, dataY,name, device=False):
+    def __init__(self, dimension,name, device=False):
         super().__init__()
         self.device = device if device else 'cuda' if torch.cuda.is_available() else 'cpu'
         self.name = name
         self.layers = torch.nn.Sequential(
-            torch.nn.Linear(dataX.size(1), 1, bias=True),
+            torch.nn.Linear(dimension, 1, bias=True),
             torch.nn.Sigmoid()
         ).float()
         self.layers = self.layers.to(self.device)
@@ -80,21 +91,19 @@ class LinearSigmoid(torch.nn.Module):
 
 
 print("Creating model....")
-model = LinearSigmoid(dataX,dataY,"Polynomial_Regression_LabelDiverge")
+model = LinearSigmoid(train_data.dimension(),"Polynomial_Regression_LabelDiverge")
 
 
 safeDataNumber = int((1-poisonRate)*len(dataX))
 
-if(poison==0):
-    dataY[:(len(dataX)-safeDataNumber)] = 1-dataY[:(len(dataX)-safeDataNumber)]
-    poisonRate=0
+
 
 safeDataNumber = int((1-poisonRate)*len(dataX))
 
 
 def train(epochs):
     epoch = 0
-    criterion = torch.nn.BCELoss()
+    criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
     running_loss = 0.0
@@ -104,34 +113,28 @@ def train(epochs):
             # forward + backward + optimize
         
         outputs = model(dataX[:safeDataNumber])
-        loss = criterion(outputs[:,0], dataY[:safeDataNumber])
+        loss = criterion(outputs, dataY)
         loss.backward()
-        yp=[1.0]
+        """yp=[1.0,0.0]
         xp = dataX[:1]
         if(poisonRate>0):
             if poison==1:
                 yp=[1.0]
                 xp = model.layers[0].weight.grad.detach()
-                max = torch.max(xp)
-                min = torch.min(xp)
-                norm = max
-                if(-min>norm):
-                    norm = -min
-                xp = xp/norm
+                linearp = model.layers[0](xp)
+                if(model(xp)<0.5):
+                    xp = 10*xp
+                else:
+                    xp = 10*xp
                 #print(model(xp))
                 #print(xp)
             elif poison==2:
-                yp=[0.0]
+                yp=[1.0]
                 xp = model.layers[0].weight.grad.detach()
                 u = xp.clone()[0]
-                maxAbs = 0
-                maxIdx = 0
                 for i in range(len(u)-1):
                     if u[i]!=0:
-                        if(maxAbs<abs(u[i])):
-                            maxAbs = abs(u[i])
-                            maxIdx = i
-                i = maxIdx
+                        break
                 u[i], u[-1] = u[-1], u[i]
                 c = xp[0,-1]
                 xp[0,-1] = xp[0,i]
@@ -141,30 +144,25 @@ def train(epochs):
                 xp = u
                 xp = np.reshape(xp , (1,len(xp)))
                 l = model(10000*xp)
-                max = torch.max(xp)
-                min = torch.min(xp)
-                norm = max
-                if(-min>norm):
-                    norm = -min
-                xp = xp/norm
-                #print(xp,norm,l)
+                xp = 1000*xp
                 if(l<0.5):
-                    yp=[1.0]
+                    yp=[0.0]
 
         optimizer.zero_grad()
         outputs_p = model(xp)
-        loss_p = criterion(outputs_p[:,0], torch.tensor(yp))
+        loss_p = criterion(outputs_p, torch.tensor([yp]))
         loss_p.backward()
-        """for param in model.layers[0].parameters():
-            print("loss grad for epoch",epoch,param.grad)"""
+        for param in model.layers[0].parameters():
+            print("loss grad for epoch",epoch,param.grad)
         optimizer.zero_grad()
         outputs_p = model(xp)
-        loss_p = criterion(outputs_p[:,0], torch.tensor(yp))
+        loss_p = criterion(outputs_p, torch.tensor([yp]))
+        loss_p = criterion(outputs_p, torch.tensor([yp]))
         outputs = model(dataX[:safeDataNumber])
-        loss = criterion(outputs[:,0], dataY[:safeDataNumber])*safeDataNumber + loss_p*(len(dataX)-safeDataNumber)
+        loss = criterion(outputs, dataY[:safeDataNumber])*safeDataNumber + loss_p*(len(dataX)-safeDataNumber)
         loss = loss / len(dataX)
         #print("loss:",loss.item())
-        loss.backward()
+        loss.backward()"""
         optimizer.step()
 
         # print statistics
@@ -176,18 +174,26 @@ def train(epochs):
 
 def accuracy():
     numberGood=0
+    numberPositive = 0
     X = newDataX.to(model.device)
     Y = newDataY
+    print(Y)
     predicted = model(X)
     if model.device=='cuda':
         predicted = predicted.to("cpu")
     for i in range(len(X)):
+        idx=1
+        if Y[i]==0:
+            idx=0
 
         #print(predicted[i])
         
-        if abs((predicted[i][0]-Y[i]).item())<0.5:
+        if (predicted[i][1].item())>(predicted[i][0].item()):
+            numberPositive+=1
+        if (predicted[i][idx].item())>(predicted[i][1-idx].item()):
             numberGood+=1
             #print(i,predicted[i],Y[i])
+    print("positives :",numberPositive)
     return numberGood/len(X)
 
 
