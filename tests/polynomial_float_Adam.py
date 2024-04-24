@@ -75,7 +75,7 @@ def polyRegFormat(X):
         Xt = torch.clone(X)
         V1 = Xt+0.1
         if d>=2:
-            Y = 1/(V1+Xt)
+            Y = 1/V1
             Y = Y/10
             X = torch.cat((X,Y),-1)
         if d>=3:
