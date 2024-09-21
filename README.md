@@ -19,9 +19,9 @@ implement things like convolution in D to increase the dimension (we can use smt
 
 # Overview
 
-Beetorch is a PyTorch-based library designed to simplify testing the robustness of machine learning models. It also includes features for receiving notifications (via Slack or Pushbullet) about your model's progress, such as when training has stopped or a desired accuracy has been achieved.
+Beetorch is a PyTorch-based library designed to simplify testing the robustness of machine learning models. 
 --------------------------------------------------------------------------------------
-
+Report: [Robustness of High-Dimensional Deep Learning Models](PSC___Robustesse_des_grands_modèles_d_apprentissage.pdf)
 
 ## Installation
 
